@@ -1,0 +1,211 @@
+﻿@using GestionFTTH.Web.Services
+@{
+    var autenticado = User.Identity?.IsAuthenticated == true;
+
+    var esAdministrador = autenticado &&
+        (User.IsInRole(Roles.AdministradorPrincipal) ||
+         User.IsInRole(Roles.AdministradorGerencia));
+
+    var esJefeArea = autenticado && User.IsInRole(Roles.JefeArea);
+    var esTrabajador = autenticado && User.IsInRole(Roles.Trabajador);
+
+    var tienePanel = esAdministrador || esJefeArea || esTrabajador;
+
+    var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
+
+    string Activo(string controlador) =>
+        string.Equals(controladorActual, controlador, StringComparison.OrdinalIgnoreCase)
+            ? "active"
+            : "";
+
+    string subtituloPanel = esAdministrador
+        ? "Gestión y monitoreo de proyectos"
+        : esJefeArea
+            ? "Seguimiento de tareas del área"
+            : "Mis tareas asignadas";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - GestiónFTTH</title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/css/dashboard.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/GestionFTTH.Web.styles.css"
+          asp-append-version="true" />
+</head>
+
+<body class="ftth-body">
+
+    @if (tienePanel)
+    {
+        <div class="ftth-layout">
+
+            <!-- MENÚ LATERAL -->
+            <aside class="ftth-sidebar">
+
+                <div class="ftth-brand">
+                    <div class="ftth-brand-icon">FT</div>
+                    <div>
+                        <strong>GestiónFTTH</strong>
+                        <small>Gestión de proyectos</small>
+                    </div>
+
+                    <!-- Solo en pantallas pequeñas: despliega / oculta el menú -->
+                    <button type="button"
+                            class="ftth-menu-toggle"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#ftthMenu"
+                            aria-controls="ftthMenu"
+                            aria-expanded="false"
+                            aria-label="Mostrar u ocultar el menú">
+                        ☰ Menú
+                    </button>
+                </div>
+
+                <div class="collapse ftth-menu-contenedor" id="ftthMenu">
+
+                <div class="ftth-menu-label">
+                    MENÚ PRINCIPAL
+                </div>
+
+                <nav class="ftth-menu"
+                     aria-label="Menú principal">
+
+                    @if (esAdministrador)
+                    {
+                        <a asp-area=""
+                           asp-controller="Dashboard"
+                           asp-action="Index"
+                           class="ftth-menu-item @Activo("Dashboard")">
+                            <span>▦</span> Dashboard
+                        </a>
+
+                        <a asp-area=""
+                           asp-controller="Proyectos"
+                           asp-action="Index"
+                           class="ftth-menu-item @Activo("Proyectos")">
+                            <span>▤</span> Proyectos
+                        </a>
+                    }
+
+                    <a asp-area=""
+                       asp-controller="Tareas"
+                       asp-action="Index"
+                       class="ftth-menu-item @Activo("Tareas")">
+                        <span>☷</span> @(esTrabajador && !esAdministrador && !esJefeArea ? "Mis tareas" : "Tareas")
+                    </a>
+
+                    @if (esAdministrador)
+                    {
+                        <a asp-area=""
+                           asp-controller="Trabajadores"
+                           asp-action="Index"
+                           class="ftth-menu-item @Activo("Trabajadores")">
+                            <span>⚒</span> Trabajadores
+                        </a>
+
+                        <a asp-area=""
+                           asp-controller="Usuarios"
+                           asp-action="Index"
+                           class="ftth-menu-item @Activo("Usuarios")">
+                            <span>♙</span> Usuarios
+                        </a>
+
+                        <a asp-area=""
+                           asp-controller="ModeloRiesgo"
+                           asp-action="Index"
+                           class="ftth-menu-item @Activo("ModeloRiesgo")">
+                            <span>◈</span> Modelo ML.NET
+                        </a>
+
+                        <span class="ftth-menu-item disabled"
+                              title="Módulo no incluido en esta versión">
+                            <span>▥</span> Reportes
+                        </span>
+                    }
+
+                </nav>
+
+                <div class="ftth-sidebar-bottom">
+                    <small>Sistema Gestión FTTH</small>
+                    <small>Versión 1.1</small>
+                </div>
+
+                </div>
+
+            </aside>
+
+            <!-- CONTENIDO PRINCIPAL -->
+            <div class="ftth-main">
+
+                <header class="ftth-topbar">
+
+                    <div>
+                        <strong>@(esAdministrador ? "Panel de administración" : "Panel de seguimiento")</strong>
+                        <small>@subtituloPanel</small>
+                    </div>
+
+                    <div class="ftth-user">
+                        <partial name="_LoginPartial" />
+                    </div>
+
+                </header>
+
+                <main class="ftth-content">
+                    <partial name="_Mensajes" />
+                    @RenderBody()
+                </main>
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <!-- VISTA PARA USUARIOS SIN PANEL (login, registro, cuenta) -->
+        <header class="navbar navbar-light bg-white border-bottom">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold"
+                   style="color:#12395e;"
+                   asp-area=""
+                   asp-controller="Home"
+                   asp-action="Index">
+                    GestiónFTTH
+                </a>
+
+                <partial name="_LoginPartial" />
+            </div>
+        </header>
+
+        <main class="container py-4">
+            @RenderBody()
+        </main>
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

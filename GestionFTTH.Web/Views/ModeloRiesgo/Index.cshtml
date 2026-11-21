@@ -1,0 +1,171 @@
+@model GestionFTTH.Web.Models.MachineLearning.ModeloInfo?
+
+@{
+    ViewData["Title"] = "Modelo de riesgo ML.NET";
+
+    var disponible = ViewBag.ModeloDisponible as bool? ?? false;
+    var estado = ViewBag.EstadoModelo as string;
+    var umbral = ViewBag.UmbralPorcentaje as int? ?? 60;
+
+    string Pct(double v) => (v * 100).ToString("0.0") + " %";
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <h2 class="ftth-titulo mb-1"><span aria-hidden="true">◈</span> Modelo de riesgo de retraso</h2>
+        <p class="text-muted mb-0">
+            Clasificación binaria con ML.NET: estima si una tarea activa terminará después de su fecha límite.
+        </p>
+    </div>
+
+    <form asp-action="Entrenar" method="post" class="text-end"
+          data-confirmar="¿Desea reentrenar el modelo? Solo se reemplazará si el nuevo modelo supera las validaciones mínimas.">
+        <button type="submit" class="btn btn-primary">Entrenar / reentrenar modelo</button>
+
+        @if (Model != null && !Model.ModoDemostrativo)
+        {
+            <div class="form-check mt-2 small">
+                <input class="form-check-input" type="checkbox" value="true"
+                       id="permitirDemoSobreReal" name="permitirDemoSobreReal" />
+                <label class="form-check-label" for="permitirDemoSobreReal">
+                    Permitir reemplazar el modelo real por uno demostrativo
+                </label>
+            </div>
+        }
+    </form>
+</div>
+
+@if (!disponible)
+{
+    <div class="alert alert-warning">
+        @(estado ?? "El modelo no está disponible.") Pulse "Entrenar / reentrenar modelo" para generarlo.
+    </div>
+}
+
+@if (Model != null)
+{
+    @if (Model.ModoDemostrativo)
+    {
+        <div class="alert alert-warning">
+            <strong>MODO DEMOSTRATIVO.</strong> El modelo vigente fue entrenado con datos simulados
+            (<code>DatosEntrenamiento.csv</code>). Las métricas siguientes describen su desempeño sobre
+            esos datos simulados y <strong>no</strong> son evidencia del rendimiento real del sistema.
+        </div>
+    }
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="ftth-stat-card">
+                <span>Accuracy</span>
+                <h2>@Pct(Model.Accuracy)</h2>
+                <small>Exactitud en evaluación</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="ftth-stat-card">
+                <span>Precision</span>
+                <h2>@Pct(Model.Precision)</h2>
+                <small>De los predichos con retraso</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="ftth-stat-card">
+                <span>Recall</span>
+                <h2>@Pct(Model.Recall)</h2>
+                <small>Retrasos detectados</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="ftth-stat-card">
+                <span>F1 Score / AUC</span>
+                <h2 style="font-size:26px;">@Pct(Model.F1Score)</h2>
+                <small>AUC: @(Model.Auc.HasValue ? Model.Auc.Value.ToString("0.000") : "No aplica")</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="ftth-card mb-4">
+        <h5 class="ftth-seccion">Información del entrenamiento</h5>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="detalle-ml-label">Fecha de entrenamiento</div>
+                <div class="detalle-ml-valor">@Model.FechaEntrenamiento.ToString("dd/MM/yyyy HH:mm")</div>
+            </div>
+            <div class="col-md-4">
+                <div class="detalle-ml-label">Origen de los datos</div>
+                <div class="detalle-ml-valor">@Model.OrigenDatos</div>
+            </div>
+            <div class="col-md-4">
+                <div class="detalle-ml-label">Algoritmo</div>
+                <div class="detalle-ml-valor">@Model.Algoritmo</div>
+            </div>
+            <div class="col-md-4">
+                <div class="detalle-ml-label">Registros (entrenamiento / evaluación)</div>
+                <div class="detalle-ml-valor">@Model.RegistrosTotales (@Model.RegistrosEntrenamiento / @Model.RegistrosEvaluacion)</div>
+            </div>
+            <div class="col-md-4">
+                <div class="detalle-ml-label">Con retraso / a tiempo</div>
+                <div class="detalle-ml-valor">@Model.RegistrosRetrasados / @Model.RegistrosNoRetrasados</div>
+            </div>
+            <div class="col-md-4">
+                <div class="detalle-ml-label">Umbral de riesgo ALTO</div>
+                <div class="detalle-ml-valor">@umbral % de probabilidad</div>
+            </div>
+            <div class="col-md-8">
+                <div class="detalle-ml-label">División entrenamiento / evaluación</div>
+                <div class="detalle-ml-valor">
+                    @(string.IsNullOrEmpty(Model.TipoDivision) ? "No registrada" : Model.TipoDivision)
+                    @if (Model.TareasEvaluacion.HasValue)
+                    {
+                        <small class="d-block text-muted">
+                            Tareas: @Model.TareasEntrenamiento entrenamiento / @Model.TareasEvaluacion evaluación
+                        </small>
+                    }
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="detalle-ml-label">Accuracy de línea base</div>
+                <div class="detalle-ml-valor">
+                    @Pct(Model.AccuracyLineaBase)
+                    <small class="d-block text-muted">Predecir siempre la clase mayoritaria</small>
+                </div>
+            </div>
+        </div>
+
+        <p class="mt-3 mb-0">
+            Métricas estadísticamente confiables:
+            <strong class="@(Model.MetricasConfiables ? "text-success" : "text-danger")">
+                @(Model.MetricasConfiables ? "Sí" : "No")
+            </strong>
+        </p>
+
+        @if (Model.Advertencias.Any())
+        {
+            <ul class="mt-3 mb-0 small text-muted">
+                @foreach (var a in Model.Advertencias)
+                {
+                    <li>@a</li>
+                }
+            </ul>
+        }
+    </div>
+}
+
+<div class="ftth-card">
+    <h5 class="ftth-seccion">¿Cómo funciona?</h5>
+    <ul class="mb-0" style="color:#38536d;">
+        <li>Características: prioridad (OneHotEncoding), duración planificada, porcentaje de avance y días transcurridos,
+            más dos variables derivadas de ellas (proporción del plazo consumido y brecha entre avance esperado y real).</li>
+        <li>Etiqueta: la tarea terminó después de su fecha límite (Sí/No).</li>
+        <li>Sin <em>data leakage</em>: solo se usa la información disponible en el momento de la predicción
+            (historial diario de avance de la tabla <code>TareaAvances</code>), nunca el avance final ni la fecha real de cierre.</li>
+        <li>Mientras la base de datos no tenga al menos el mínimo configurado de registros históricos
+            de tareas finalizadas (con casos retrasados y a tiempo), se entrena con el CSV demostrativo.</li>
+        <li>Con datos reales, la evaluación es <strong>temporal y por tarea</strong>: las tareas que finalizaron
+            más recientemente se reservan para evaluar, y ninguna tarea aparece en ambos conjuntos.</li>
+        <li>El modelo nuevo solo reemplaza al vigente si supera las validaciones mínimas (accuracy y AUC);
+            si falla, se conserva el anterior. Un modelo real no se reemplaza por uno demostrativo salvo que se indique.</li>
+        <li>La predicción no modifica fechas, estados ni prioridades de las tareas.</li>
+    </ul>
+</div>

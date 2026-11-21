@@ -1,0 +1,62 @@
+@* Modal de detalle de la predicción ML.NET (se llena con wwwroot/js/site.js) *@
+<div class="modal fade" id="modalPrediccion" tabindex="-1"
+     aria-labelledby="modalPrediccionTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:14px;">
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalPrediccionTitulo" style="color:#12395e;">
+                    <span aria-hidden="true">◈</span> Detalle de la predicción
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <h6 class="fw-bold mb-3" data-campo="tarea" style="color:#173b5e;"></h6>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <div class="detalle-ml-label">Prioridad</div>
+                        <div class="detalle-ml-valor" data-campo="prioridad"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detalle-ml-label">Duración planificada</div>
+                        <div class="detalle-ml-valor" data-campo="duracion"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detalle-ml-label">Días transcurridos</div>
+                        <div class="detalle-ml-valor" data-campo="dias"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detalle-ml-label">Porcentaje de avance</div>
+                        <div class="detalle-ml-valor" data-campo="avance"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detalle-ml-label">Riesgo estimado</div>
+                        <div class="detalle-ml-valor"><span class="btn-riesgo" data-campo="riesgo"></span></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detalle-ml-label">Probabilidad de retraso</div>
+                        <div class="detalle-ml-valor" data-campo="probabilidad"></div>
+                    </div>
+                </div>
+
+                <div class="alert alert-light border mb-2" data-campo="mensaje"></div>
+
+                <div class="alert alert-warning py-2 small mb-2 d-none" data-campo="demo">
+                    Modelo en <strong>modo demostrativo</strong>: entrenado con datos simulados.
+                </div>
+
+                <p class="small text-muted mb-0">
+                    Esta predicción es una estimación basada en los datos disponibles y no
+                    sustituye la evaluación del responsable del área.
+                </p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>

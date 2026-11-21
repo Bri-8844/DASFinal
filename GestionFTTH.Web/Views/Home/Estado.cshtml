@@ -1,0 +1,20 @@
+@{
+    var codigo = ViewBag.Codigo as int? ?? 0;
+
+    var (titulo, mensaje) = codigo switch
+    {
+        404 => ("Registro no encontrado", "El recurso solicitado no existe o fue eliminado."),
+        400 => ("Solicitud no válida", "La solicitud contiene datos inválidos o el formulario expiró. Vuelva a intentarlo."),
+        403 => ("Acceso denegado", "No tiene permisos para acceder a este recurso."),
+        _ => ("Ocurrió un problema", "No se pudo completar la solicitud.")
+    };
+
+    ViewData["Title"] = titulo;
+}
+
+<div class="text-center py-5">
+    <div style="font-size:52px; font-weight:800; color:#c6d6e6;">@codigo</div>
+    <h2 class="ftth-titulo">@titulo</h2>
+    <p class="text-muted">@mensaje</p>
+    <a href="~/" class="btn btn-primary">Ir al inicio</a>
+</div>

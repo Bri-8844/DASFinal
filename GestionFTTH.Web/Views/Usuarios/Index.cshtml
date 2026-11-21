@@ -1,0 +1,153 @@
+﻿@model IEnumerable<GestionFTTH.Web.Data.ApplicationUser>
+@using GestionFTTH.Web.Services
+
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+
+    var rolesUsuarios =
+        ViewBag.RolesUsuarios as Dictionary<string, string>
+        ?? new Dictionary<string, string>();
+
+    var usuarioActualId = ViewBag.UsuarioActualId as string;
+    var esAdministradorPrincipal = ViewBag.EsAdministradorPrincipal as bool? ?? false;
+}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-3 mb-4">
+
+        <div>
+            <h2 class="fw-bold" style="color:#12395e;">
+                Gestión de Usuarios
+            </h2>
+
+            <p class="text-muted mb-0">
+                Administración de cuentas de acceso
+            </p>
+        </div>
+
+        <a asp-controller="Usuarios"
+           asp-action="Create"
+           class="btn btn-primary">
+            + Nuevo usuario
+        </a>
+
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Rol</th>
+                            <th>Trabajador vinculado</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var usuario in Model)
+                        {
+                            var rolUsuario = rolesUsuarios.TryGetValue(usuario.Id, out var r) ? r : "";
+                            bool editable = rolUsuario != Roles.AdministradorPrincipal || esAdministradorPrincipal;
+                            bool esActual = usuario.Id == usuarioActualId;
+
+                            <tr>
+                                <td>
+                                    @usuario.Email
+                                    @if (esActual)
+                                    {
+                                        <span class="badge bg-light text-dark border ms-1">Usted</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        @Roles.NombreVisible(rolUsuario)
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (usuario.Trabajador != null)
+                                    {
+                                        <a asp-controller="Trabajadores" asp-action="Details"
+                                           asp-route-id="@usuario.Trabajador.Id" class="text-decoration-none">
+                                            @usuario.Trabajador.Nombres @usuario.Trabajador.Apellidos
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sin trabajador vinculado</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (usuario.LockoutEnd.HasValue && usuario.LockoutEnd > DateTimeOffset.UtcNow)
+                                    {
+                                        <span class="badge bg-danger" title="Bloqueada por intentos fallidos">Bloqueada</span>
+                                    }
+                                    else if (usuario.EmailConfirmed)
+                                    {
+                                        <span class="badge bg-success">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark" title="No puede iniciar sesión hasta confirmar la cuenta">Sin confirmar</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (editable)
+                                    {
+                                        <div class="acciones-tabla">
+                                            <a asp-action="Edit" asp-route-id="@usuario.Id"
+                                               class="btn btn-sm btn-outline-primary">Editar</a>
+
+                                            @if (usuario.LockoutEnd.HasValue && usuario.LockoutEnd > DateTimeOffset.UtcNow)
+                                            {
+                                                <form asp-action="Desbloquear" asp-route-id="@usuario.Id" method="post">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success">Desbloquear</button>
+                                                </form>
+                                            }
+
+                                            @if (!esActual)
+                                            {
+                                                <form asp-action="Delete" asp-route-id="@usuario.Id" method="post"
+                                                      data-confirmar="¿Está seguro de eliminar la cuenta @usuario.Email? Sus tareas quedarán sin asignar.">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                                </form>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Solo administrador principal</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="5"
+                                    class="text-center text-muted py-4">
+                                    No existen usuarios registrados.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,236 @@
+@model GestionFTTH.Web.Models.TareaDetalleViewModel
+@using GestionFTTH.Web.Models
+@using GestionFTTH.Web.Models.MachineLearning
+
+@{
+    var t = Model.Tarea;
+    var p = Model.Prediccion;
+    ViewData["Title"] = $"Tarea {t.Codigo}";
+
+    string claseEstado = t.Estado switch
+    {
+        EstadoTarea.Finalizada => "bg-success",
+        EstadoTarea.EnEjecucion => "bg-primary",
+        _ => "bg-secondary"
+    };
+
+    string claseRiesgo = p.Riesgo switch
+    {
+        NivelRiesgo.Alto => "riesgo-alto",
+        NivelRiesgo.Bajo => "riesgo-bajo",
+        _ => "riesgo-nd"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <h2 class="ftth-titulo mb-1">@t.Titulo</h2>
+        <span class="text-muted">Código: @t.Codigo</span>
+    </div>
+
+    <span class="badge rounded-pill @claseEstado px-3 py-2">
+        @NombresVisibles.EstadoTarea(t.Estado)
+    </span>
+</div>
+
+<div class="row g-4">
+
+    <!-- Información de la tarea -->
+    <div class="col-lg-7">
+        <div class="ftth-card h-100">
+
+            <h5 class="ftth-seccion">Información general</h5>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="detalle-ml-label">Proyecto</div>
+                    <div class="detalle-ml-valor">
+                        @(t.Proyecto != null ? $"{t.Proyecto.Codigo} - {t.Proyecto.Nombre}" : "Sin proyecto")
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="detalle-ml-label">Responsable</div>
+                    <div class="detalle-ml-valor">@Model.NombreResponsable</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detalle-ml-label">Prioridad</div>
+                    <div class="detalle-ml-valor">@NombresVisibles.Prioridad(t.Prioridad)</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detalle-ml-label">Avance</div>
+                    <div class="detalle-ml-valor">@t.PorcentajeAvance %</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detalle-ml-label">Registrada</div>
+                    <div class="detalle-ml-valor">@t.FechaRegistro.ToLocalTime().ToString("dd/MM/yyyy")</div>
+                </div>
+            </div>
+
+            <h5 class="ftth-seccion mt-4">Cronograma</h5>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="detalle-ml-label">Fecha de inicio</div>
+                    <div class="detalle-ml-valor">@(t.FechaInicio?.ToString("dd/MM/yyyy") ?? "No definida")</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detalle-ml-label">Fecha límite</div>
+                    <div class="detalle-ml-valor">@(t.FechaLimite?.ToString("dd/MM/yyyy") ?? "No definida")</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detalle-ml-label">Fecha de finalización</div>
+                    <div class="detalle-ml-valor">
+                        @(t.FechaFinalizacion?.ToString("dd/MM/yyyy") ?? "—")
+                        @if (t.FechaFinalizacion.HasValue && t.FechaLimite.HasValue)
+                        {
+                            <small class="d-block @(t.FechaFinalizacion.Value.Date > t.FechaLimite.Value.Date ? "text-danger" : "text-success")">
+                                @(t.FechaFinalizacion.Value.Date > t.FechaLimite.Value.Date ? "Finalizó con retraso" : "Finalizó a tiempo")
+                            </small>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="ftth-seccion mt-4">Descripción</h5>
+
+            <p style="white-space:pre-wrap; color:#38536d;">@(string.IsNullOrWhiteSpace(t.Descripcion) ? "Sin descripción." : t.Descripcion)</p>
+
+            <hr />
+
+            <div class="d-flex justify-content-end flex-wrap gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">Volver al listado</a>
+
+                @if (Model.PuedeGestionar)
+                {
+                    <a asp-action="Edit" asp-route-id="@t.Id" class="btn btn-primary">Editar tarea</a>
+
+                    <form asp-action="Delete" asp-route-id="@t.Id" method="post"
+                          data-confirmar="¿Está seguro de eliminar la tarea @t.Codigo? Esta acción no se puede deshacer.">
+                        <button type="submit" class="btn btn-outline-danger">Eliminar</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Predicción ML.NET + actualización de avance -->
+    <div class="col-lg-5">
+
+        <div class="ftth-card mb-4">
+            <h5 class="ftth-seccion"><span aria-hidden="true">◈</span> Riesgo de retraso (ML.NET)</h5>
+
+            @if (p.Disponible)
+            {
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="btn-riesgo @claseRiesgo" style="font-size:15px; cursor:default;">
+                        @p.RiesgoTexto
+                    </span>
+                    @if (p.ProbabilidadPorcentaje.HasValue)
+                    {
+                        <div>
+                            <div class="detalle-ml-label">Probabilidad estimada de retraso</div>
+                            <div class="detalle-ml-valor">@p.ProbabilidadPorcentaje %</div>
+                        </div>
+                    }
+                </div>
+
+                <div class="row g-2 small mb-3">
+                    <div class="col-6">Duración planificada: <strong>@p.DuracionPlanificada días</strong></div>
+                    <div class="col-6">Días transcurridos: <strong>@p.DiasTranscurridos días</strong></div>
+                    <div class="col-6">Avance: <strong>@p.PorcentajeAvance %</strong></div>
+                    <div class="col-6">Umbral de riesgo alto: <strong>@Model.UmbralRiesgoPorcentaje %</strong></div>
+                </div>
+
+                <div class="alert alert-light border small mb-2">@p.Mensaje</div>
+
+                @if (p.ModoDemostrativo)
+                {
+                    <div class="alert alert-warning py-2 small mb-2">
+                        Modelo en <strong>modo demostrativo</strong>: entrenado con datos simulados.
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="mb-2"><span class="btn-riesgo riesgo-nd" style="cursor:default;">No disponible</span></p>
+                <p class="small text-muted">@p.Mensaje</p>
+            }
+
+            <p class="small text-muted mb-0">
+                Esta predicción es una estimación basada en los datos disponibles y no
+                sustituye la evaluación del responsable del área.
+            </p>
+        </div>
+
+        @if (Model.PuedeActualizarAvance)
+        {
+            <div class="ftth-card">
+                <h5 class="ftth-seccion">Actualizar avance</h5>
+
+                <form asp-action="ActualizarAvance" method="post" class="row g-3">
+                    <input type="hidden" name="Id" value="@t.Id" />
+
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="PorcentajeAvance">Avance (%)</label>
+                        <input type="number" class="form-control" id="PorcentajeAvance" name="PorcentajeAvance"
+                               min="0" max="100" step="1" required value="@t.PorcentajeAvance" />
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="Estado">Estado</label>
+                        <select class="form-select" id="Estado" name="Estado"
+                                asp-items="Html.GetEnumSelectList<EstadoTarea>()">
+                        </select>
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">Registrar avance</button>
+                    </div>
+                </form>
+
+                <script>
+                    document.getElementById("Estado").value = "@((int)t.Estado)";
+                </script>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Historial de avance -->
+<div class="ftth-card mt-4">
+    <h5 class="ftth-seccion">Historial de avance</h5>
+
+    @if (Model.Avances.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Avance</th>
+                        <th>Estado</th>
+                        <th>Día de ejecución</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model.Avances)
+                    {
+                        <tr>
+                            <td>@a.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@a.PorcentajeAvance %</td>
+                            <td>@NombresVisibles.EstadoTarea(a.Estado)</td>
+                            <td>@(t.FechaInicio.HasValue ? (a.Fecha.Date - t.FechaInicio.Value.Date).Days.ToString() : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <small class="text-muted d-block mt-2">
+            Este historial se utiliza para reentrenar el modelo ML.NET con información real.
+        </small>
+    }
+    else
+    {
+        <p class="text-muted mb-0">Aún no hay avances registrados para esta tarea.</p>
+    }
+</div>

@@ -1,0 +1,25 @@
+{
+  "FechaEntrenamiento": "2026-11-19T13:12:40.0611448-05:00",
+  "OrigenDatos": "Demostrativo (DatosEntrenamiento.csv)",
+  "ModoDemostrativo": true,
+  "Algoritmo": "SdcaLogisticRegression (clasificaci\u00F3n binaria)",
+  "RegistrosTotales": 900,
+  "RegistrosEntrenamiento": 720,
+  "RegistrosEvaluacion": 180,
+  "RegistrosRetrasados": 500,
+  "RegistrosNoRetrasados": 400,
+  "TipoDivision": "Aleatoria estratificada (datos simulados sin dimensi\u00F3n temporal)",
+  "TareasEntrenamiento": null,
+  "TareasEvaluacion": null,
+  "AccuracyLineaBase": 0.5556,
+  "Accuracy": 0.7556,
+  "Precision": 0.78,
+  "Recall": 0.78,
+  "F1Score": 0.78,
+  "Auc": 0.8248,
+  "MetricasConfiables": false,
+  "Advertencias": [
+    "La base de datos tiene 0 registros hist\u00F3ricos v\u00E1lidos (se requieren al menos 60 con tareas retrasadas y a tiempo). Se us\u00F3 el CSV demostrativo.",
+    "MODO DEMOSTRATIVO: el modelo se entren\u00F3 con datos simulados (DatosEntrenamiento.csv). Sus m\u00E9tricas NO representan el rendimiento real del sistema."
+  ]
+}

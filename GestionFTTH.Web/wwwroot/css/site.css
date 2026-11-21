@@ -1,0 +1,204 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+/* ===== Riesgo de retraso (ML.NET) ===== */
+
+.btn-riesgo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+  .btn-riesgo:focus-visible {
+    outline: 3px solid #9cc9ee;
+  }
+
+.riesgo-alto {
+  background: #fde2e2;
+  color: #b42318;
+}
+
+.riesgo-bajo {
+  background: #ddf7ed;
+  color: #087a55;
+}
+
+.riesgo-nd {
+  background: #eef2f6;
+  color: #60778e;
+  font-weight: 600;
+}
+
+.ml-icono {
+  font-size: 13px;
+}
+
+.ml-subtitulo {
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.ml-aviso {
+  background: #f1f6fb;
+  border: 1px solid #dbe7f2;
+  border-radius: 12px;
+  color: #31516f;
+  font-size: 13px;
+  padding: 12px 16px;
+}
+
+.detalle-ml-label {
+  color: #7890a8;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.detalle-ml-valor {
+  color: #173b5e;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ===== Menú lateral plegable en pantallas pequeñas ===== */
+
+.ftth-menu-toggle {
+  display: none;
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (min-width: 769px) {
+  /* En escritorio el menú siempre está visible */
+  .ftth-menu-contenedor,
+  .ftth-menu-contenedor.collapse:not(.show) {
+    display: flex !important;
+    flex-direction: column;
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .ftth-menu-toggle {
+    display: inline-block;
+  }
+
+  .ftth-sidebar {
+    padding: 14px 16px;
+  }
+
+  .ftth-brand {
+    padding: 0;
+  }
+
+  .ftth-menu-contenedor.show,
+  .ftth-menu-contenedor.collapsing {
+    padding-top: 16px;
+  }
+}
+
+/* ===== Tablas de listados: códigos sin cortes y acciones en una fila ===== */
+
+.table td.fw-semibold a,
+.tabla-proyectos td a.fw-bold {
+  white-space: nowrap;
+}
+
+/* Listado de tareas: 10 columnas, más compacto para caber sin scroll en escritorio */
+.tabla-tareas {
+  font-size: 14px;
+}
+
+  .tabla-tareas th,
+  .tabla-tareas td {
+    padding: 8px 6px;
+  }
+
+  .tabla-tareas .btn-riesgo {
+    padding: 5px 9px;
+    font-size: 11.5px;
+  }
+
+  .tabla-tareas .acciones-tabla .btn {
+    padding: 2px 8px;
+    font-size: 12.5px;
+  }
+
+/* Listado de proyectos: encabezados en dos líneas si hace falta */
+.tabla-proyectos thead th {
+  white-space: normal !important;
+  padding: 12px 10px !important;
+}
+
+.tabla-proyectos tbody td {
+  padding: 12px 10px !important;
+}
+
+/* ===== Componentes comunes de módulos ===== */
+
+.ftth-card {
+  background: white;
+  border: 1px solid #e1eaf3;
+  border-radius: 15px;
+  padding: 24px;
+  box-shadow: 0 5px 20px rgba(10, 49, 82, 0.04);
+}
+
+.ftth-titulo {
+  color: #12395e;
+  font-weight: 700;
+}
+
+.ftth-seccion {
+  color: #12395e;
+  font-size: 17px;
+  font-weight: 700;
+  border-bottom: 1px solid #e5edf5;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.acciones-tabla {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  /* Ver y Editar en una fila, Eliminar debajo: la tabla cabe sin scroll en escritorio */
+  min-width: 128px;
+}
+
+  .acciones-tabla form {
+    margin: 0;
+  }

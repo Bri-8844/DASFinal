@@ -1,0 +1,54 @@
+﻿@model GestionFTTH.Web.Models.Tarea
+
+@{
+    ViewData["Title"] = "Nueva tarea";
+}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1" style="color:#12395e;">
+            Nueva tarea
+        </h2>
+
+        <p class="text-muted">
+            Registro de actividades asociadas a proyectos FTTH
+        </p>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <form asp-controller="Tareas"
+                  asp-action="Create"
+                  method="post">
+
+                <partial name="_FormularioTarea" model="Model" />
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <a asp-controller="Tareas"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Guardar tarea
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

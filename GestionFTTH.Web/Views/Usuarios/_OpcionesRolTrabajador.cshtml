@@ -1,0 +1,87 @@
+@using GestionFTTH.Web.Models
+@using GestionFTTH.Web.Services
+@*
+    Selector de rol + trabajador vinculado (compartido por Create y Edit).
+    ViewData["Rol"], ViewData["TrabajadorId"]: valores seleccionados.
+*@
+@{
+    var trabajadores = ViewBag.Trabajadores as List<Trabajador>
+        ?? new List<Trabajador>();
+
+    var esAdministradorPrincipal = ViewBag.EsAdministradorPrincipal as bool? ?? false;
+
+    var rolSeleccionado = ViewData["Rol"] as string ?? "";
+    var trabajadorSeleccionado = ViewData["TrabajadorId"] as int?;
+}
+
+<!-- Rol -->
+<div class="col-md-6">
+    <label class="form-label fw-semibold" for="Rol">Rol</label>
+
+    <select name="Rol" id="Rol" class="form-select" required>
+        <option value="">-- Seleccione un rol --</option>
+
+        @foreach (var rol in Roles.Lista)
+        {
+            if (rol == Roles.AdministradorPrincipal && !esAdministradorPrincipal && rolSeleccionado != rol)
+            {
+                continue;
+            }
+
+            if (rol == rolSeleccionado)
+            {
+                <option value="@rol" selected>@Roles.NombreVisible(rol)</option>
+            }
+            else
+            {
+                <option value="@rol">@Roles.NombreVisible(rol)</option>
+            }
+        }
+    </select>
+
+    @Html.ValidationMessage("Rol", null, new { @class = "text-danger" })
+</div>
+
+<!-- Trabajador vinculado -->
+<div class="col-md-6" id="grupoTrabajador">
+    <label class="form-label fw-semibold" for="TrabajadorId">Trabajador vinculado</label>
+
+    <select name="TrabajadorId" id="TrabajadorId" class="form-select">
+        <option value="">-- Seleccione un trabajador --</option>
+
+        @foreach (var trabajador in trabajadores)
+        {
+            var texto = $"{trabajador.Codigo} - {trabajador.Nombres} {trabajador.Apellidos} ({NombresVisibles.Area(trabajador.Area)})";
+
+            if (trabajador.Id == trabajadorSeleccionado)
+            {
+                <option value="@trabajador.Id" selected>@texto</option>
+            }
+            else
+            {
+                <option value="@trabajador.Id">@texto</option>
+            }
+        }
+    </select>
+
+    <small class="text-muted">Obligatorio para Jefe de área y Trabajador. Solo aparecen trabajadores sin cuenta.</small>
+    @Html.ValidationMessage("TrabajadorId", null, new { @class = "text-danger d-block" })
+</div>
+
+<script>
+    (function () {
+        var rol = document.getElementById("Rol");
+        var grupo = document.getElementById("grupoTrabajador");
+        var trabajador = document.getElementById("TrabajadorId");
+
+        function actualizar() {
+            var requiere = rol.value === "@Roles.Trabajador" || rol.value === "@Roles.JefeArea";
+            grupo.style.display = requiere ? "block" : "none";
+            trabajador.required = requiere;
+            if (!requiere) { trabajador.value = ""; }
+        }
+
+        rol.addEventListener("change", actualizar);
+        actualizar();
+    })();
+</script>

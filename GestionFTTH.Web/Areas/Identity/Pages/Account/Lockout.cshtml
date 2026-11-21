@@ -1,0 +1,14 @@
+﻿@page
+@model LockoutModel
+@{
+    ViewData["Title"] = "Cuenta bloqueada";
+}
+
+<header>
+    <h1 class="text-danger">@ViewData["Title"]</h1>
+    <p class="text-danger">
+        La cuenta se bloqueó temporalmente por varios intentos fallidos de inicio de sesión.
+        Intente nuevamente en unos minutos o solicite ayuda a un administrador.
+    </p>
+    <a asp-page="./Login" class="btn btn-outline-primary">Volver al inicio de sesión</a>
+</header>

@@ -1,0 +1,259 @@
+﻿@model GestionFTTH.Web.Models.TareasIndexViewModel
+@using GestionFTTH.Web.Models
+
+@{
+    ViewData["Title"] = "Gestión de Tareas";
+
+    string ClaseFiltro(string? valor) =>
+        Model.Filtro == valor ? "btn-primary" : "btn-outline-primary";
+}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-3 mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1" style="color:#12395e;">
+                Gestión de Tareas
+            </h2>
+
+            <p class="text-muted mb-0">
+                Seguimiento y control de actividades FTTH · @Model.TituloAlcance
+            </p>
+        </div>
+
+        @if (Model.PuedeGestionar)
+        {
+            <a asp-controller="Tareas"
+               asp-action="Create"
+               class="btn btn-primary">
+                + Nueva tarea
+            </a>
+        }
+
+    </div>
+
+    <!-- Aviso del módulo de predicción -->
+    <div class="ml-aviso mb-3">
+        <strong><span aria-hidden="true">◈</span> Riesgo de retraso (ML.NET):</strong>
+        Esta predicción es una estimación basada en los datos disponibles y no sustituye
+        la evaluación del responsable del área. Riesgo ALTO a partir de
+        @Model.UmbralRiesgoPorcentaje % de probabilidad estimada.
+
+        @if (!Model.ModeloDisponible)
+        {
+            <div class="text-danger mt-1">
+                @Model.EstadoModelo Las predicciones se muestran como "No disponible".
+            </div>
+        }
+        else if (Model.ModoDemostrativo)
+        {
+            <div class="mt-1">
+                <span class="badge bg-warning text-dark">Modo demostrativo</span>
+                El modelo fue entrenado con datos simulados; sus resultados son ilustrativos.
+            </div>
+        }
+    </div>
+
+    <!-- Filtros -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <a asp-action="Index" class="btn btn-sm @ClaseFiltro(null)">Todas</a>
+        <a asp-action="Index" asp-route-filtro="activas" class="btn btn-sm @ClaseFiltro("activas")">Activas</a>
+        <a asp-action="Index" asp-route-filtro="riesgo-alto" class="btn btn-sm @ClaseFiltro("riesgo-alto")">Riesgo alto</a>
+        <a asp-action="Index" asp-route-filtro="finalizadas" class="btn btn-sm @ClaseFiltro("finalizadas")">Finalizadas</a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-hover table-sm align-middle tabla-tareas">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código</th>
+                            <th>Tarea</th>
+                            <th>Proyecto</th>
+                            <th>Responsable</th>
+                            <th>Prioridad</th>
+                            <th>Estado</th>
+                            <th>Avance</th>
+                            <th>Fecha límite</th>
+                            <th>Riesgo de retraso (ML.NET)</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var tarea in Model.Tareas)
+                        {
+                            var prediccion = Model.Predicciones[tarea.Id];
+                            bool vencida = tarea.Estado != EstadoTarea.Finalizada &&
+                                           tarea.FechaLimite.HasValue &&
+                                           tarea.FechaLimite.Value.Date < DateTime.Today;
+
+                            <tr>
+                                <td class="fw-semibold">
+                                    <a asp-action="Details" asp-route-id="@tarea.Id"
+                                       class="text-decoration-none">@tarea.Codigo</a>
+                                </td>
+
+                                <td>@tarea.Titulo</td>
+
+                                <td>
+                                    @(tarea.Proyecto?.Nombre ?? "Sin proyecto")
+                                </td>
+
+                                <td>
+                                    @if (!string.IsNullOrEmpty(tarea.ResponsableId) &&
+                                         Model.NombresResponsables.TryGetValue(
+                                             tarea.ResponsableId, out var nombreResponsable))
+                                    {
+                                        <span>@nombreResponsable</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sin asignar</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @switch (tarea.Prioridad)
+                                    {
+                                        case PrioridadTarea.Alta:
+                                            <span class="badge bg-danger">Alta</span>
+                                            break;
+
+                                        case PrioridadTarea.Media:
+                                            <span class="badge bg-warning text-dark">Media</span>
+                                            break;
+
+                                        default:
+                                            <span class="badge bg-secondary">Baja</span>
+                                            break;
+                                    }
+                                </td>
+
+                                <td>
+                                    @switch (tarea.Estado)
+                                    {
+                                        case EstadoTarea.Finalizada:
+                                            <span class="badge bg-success">Finalizada</span>
+                                            break;
+
+                                        case EstadoTarea.EnEjecucion:
+                                            <span class="badge bg-primary">En ejecución</span>
+                                            break;
+
+                                        default:
+                                            <span class="badge bg-secondary">Pendiente</span>
+                                            break;
+                                    }
+                                </td>
+
+                                <td style="min-width:80px;">
+                                    <div class="progress" style="height:8px;">
+                                        <div class="progress-bar"
+                                             role="progressbar"
+                                             style="width:@(tarea.PorcentajeAvance)%"
+                                             aria-valuenow="@tarea.PorcentajeAvance"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <small>@tarea.PorcentajeAvance%</small>
+                                </td>
+
+                                <td>
+                                    @(tarea.FechaLimite?.ToString("dd/MM/yyyy") ?? "-")
+                                    @if (vencida)
+                                    {
+                                        <small class="d-block text-danger fw-semibold">Vencida</small>
+                                    }
+                                </td>
+
+                                <td>
+                                    <partial name="_RiesgoBadge" model="prediccion"
+                                             view-data='new ViewDataDictionary(ViewData) { { "NombreTarea", tarea.Titulo } }' />
+                                </td>
+
+                                <td>
+                                    <div class="acciones-tabla">
+                                        <a asp-action="Details" asp-route-id="@tarea.Id"
+                                           class="btn btn-sm btn-outline-secondary">Ver</a>
+
+                                        @if (Model.PuedeGestionar)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@tarea.Id"
+                                               class="btn btn-sm btn-outline-primary">Editar</a>
+
+                                            <form asp-action="Delete" asp-route-id="@tarea.Id" method="post"
+                                                  data-confirmar="¿Está seguro de eliminar la tarea @tarea.Codigo? Esta acción no se puede deshacer.">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+
+                        @if (!Model.Tareas.Any())
+                        {
+                            <tr>
+                                <td colspan="10"
+                                    class="text-center text-muted py-5">
+                                    @(Model.Filtro == null
+                                        ? "Todavía no existen tareas registradas."
+                                        : "No hay tareas que coincidan con el filtro seleccionado.")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
+            @if (Model.TotalRegistros > 0)
+            {
+                int desde = (Model.Pagina - 1) * Model.TamanoPagina + 1;
+                int hasta = desde + Model.Tareas.Count - 1;
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
+                    <small class="text-muted">
+                        Mostrando @desde–@hasta de @Model.TotalRegistros tareas
+                    </small>
+
+                    @if (Model.TotalPaginas > 1)
+                    {
+                        <nav aria-label="Paginación de tareas">
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item @(Model.Pagina <= 1 ? "disabled" : "")">
+                                    <a class="page-link" asp-action="Index" asp-route-filtro="@Model.Filtro"
+                                       asp-route-pagina="@(Model.Pagina - 1)">Anterior</a>
+                                </li>
+
+                                @for (int i = Math.Max(1, Model.Pagina - 2); i <= Math.Min(Model.TotalPaginas, Model.Pagina + 2); i++)
+                                {
+                                    <li class="page-item @(i == Model.Pagina ? "active" : "")">
+                                        <a class="page-link" asp-action="Index" asp-route-filtro="@Model.Filtro"
+                                           asp-route-pagina="@i">@i</a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(Model.Pagina >= Model.TotalPaginas ? "disabled" : "")">
+                                    <a class="page-link" asp-action="Index" asp-route-filtro="@Model.Filtro"
+                                       asp-route-pagina="@(Model.Pagina + 1)">Siguiente</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    }
+                </div>
+            }
+
+        </div>
+    </div>
+
+</div>
+
+<partial name="_ModalPrediccion" />

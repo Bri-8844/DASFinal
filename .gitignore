@@ -1,0 +1,27 @@
+# Compilación
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+publish/
+*.pdb
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Secretos y configuración local (nunca al repositorio)
+secrets.json
+appsettings.*.local.json
+*.pfx
+*.key
+.env
+
+# Logs y temporales
+logs/
+*.log
+MLModels/*.tmp
+
+# Capturas generadas por las pruebas visuales
+Pruebas/capturas/

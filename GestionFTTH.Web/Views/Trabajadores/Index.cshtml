@@ -1,0 +1,148 @@
+﻿@model IEnumerable<GestionFTTH.Web.Models.Trabajador>
+@using GestionFTTH.Web.Models
+
+@{
+    ViewData["Title"] = "Gestión de Trabajadores";
+
+    var cuentas = ViewBag.Cuentas as Dictionary<int, string>
+                  ?? new Dictionary<int, string>();
+}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-3 mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1" style="color:#12395e;">
+                Gestión de Trabajadores
+            </h2>
+
+            <p class="text-muted mb-0">
+                Registro y administración del personal FTTH
+            </p>
+        </div>
+
+        <a asp-controller="Trabajadores"
+           asp-action="Create"
+           class="btn btn-primary">
+            + Nuevo trabajador
+        </a>
+
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombres</th>
+                            <th>Apellidos</th>
+                            <th>Área</th>
+                            <th>Cargo</th>
+                            <th>Cuenta de usuario</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var trabajador in Model)
+                        {
+                            <tr>
+                                <td class="fw-semibold">
+                                    <a asp-action="Details" asp-route-id="@trabajador.Id"
+                                       class="text-decoration-none">@trabajador.Codigo</a>
+                                </td>
+
+                                <td>@trabajador.Nombres</td>
+
+                                <td>@trabajador.Apellidos</td>
+
+                                <td>
+                                    @switch (trabajador.Area)
+                                    {
+                                        case AreaProyecto.Prediseño:
+                                            <span class="badge bg-info text-dark">Prediseño</span>
+                                            break;
+
+                                        case AreaProyecto.Diseño:
+                                            <span class="badge bg-primary">Diseño</span>
+                                            break;
+
+                                        case AreaProyecto.Construccion:
+                                            <span class="badge bg-warning text-dark">Construcción</span>
+                                            break;
+                                    }
+                                </td>
+
+                                <td>@trabajador.Cargo</td>
+
+                                <td>
+                                    @if (cuentas.TryGetValue(trabajador.Id, out var correo))
+                                    {
+                                        <span>@correo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sin cuenta</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="acciones-tabla">
+
+                                        <a asp-controller="Trabajadores"
+                                           asp-action="Details"
+                                           asp-route-id="@trabajador.Id"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            Ver
+                                        </a>
+
+                                        <a asp-controller="Trabajadores"
+                                           asp-action="Edit"
+                                           asp-route-id="@trabajador.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Editar
+                                        </a>
+
+                                        <form asp-controller="Trabajadores"
+                                              asp-action="Delete"
+                                              asp-route-id="@trabajador.Id"
+                                              method="post"
+                                              data-confirmar="¿Está seguro de eliminar a @trabajador.Nombres @trabajador.Apellidos?">
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+                                                Eliminar
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="7"
+                                    class="text-center text-muted py-5">
+                                    Todavía no existen trabajadores registrados.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>

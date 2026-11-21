@@ -1,0 +1,42 @@
+@model GestionFTTH.Web.Models.MachineLearning.TaskPredictionResult
+@using GestionFTTH.Web.Models.MachineLearning
+@*
+    Badge de riesgo ML.NET. Al pulsarlo abre el modal #modalPrediccion
+    con el detalle (datos leídos de los atributos data-*).
+    ViewData["NombreTarea"] = título de la tarea.
+*@
+@{
+    var nombreTarea = ViewData["NombreTarea"] as string ?? "";
+    var claseBadge = Model.Riesgo switch
+    {
+        NivelRiesgo.Alto => "riesgo-alto",
+        NivelRiesgo.Bajo => "riesgo-bajo",
+        _ => "riesgo-nd"
+    };
+    var texto = Model.Disponible
+        ? (Model.ProbabilidadPorcentaje.HasValue
+            ? $"{Model.RiesgoTexto} - {Model.ProbabilidadPorcentaje}%"
+            : Model.RiesgoTexto)
+        : "No disponible";
+}
+
+<button type="button"
+        class="btn-riesgo @claseBadge"
+        data-bs-toggle="modal"
+        data-bs-target="#modalPrediccion"
+        data-tarea="@nombreTarea"
+        data-disponible="@(Model.Disponible ? "1" : "0")"
+        data-riesgo="@Model.RiesgoTexto"
+        data-nivel="@claseBadge"
+        data-probabilidad="@(Model.ProbabilidadPorcentaje?.ToString() ?? "")"
+        data-prioridad="@(Model.Prioridad ?? "")"
+        data-duracion="@(Model.DuracionPlanificada?.ToString() ?? "")"
+        data-dias="@(Model.DiasTranscurridos?.ToString() ?? "")"
+        data-avance="@(Model.PorcentajeAvance?.ToString() ?? "")"
+        data-mensaje="@Model.Mensaje"
+        data-demo="@(Model.ModoDemostrativo ? "1" : "0")"
+        title="Ver detalle de la predicción">
+    <span class="ml-icono" aria-hidden="true">◈</span>
+    @texto
+</button>
+<small class="d-block text-muted ml-subtitulo">Predicción ML.NET</small>

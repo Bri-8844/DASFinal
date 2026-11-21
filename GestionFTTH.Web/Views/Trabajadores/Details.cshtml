@@ -1,0 +1,93 @@
+@model GestionFTTH.Web.Models.Trabajador
+@using GestionFTTH.Web.Models
+@using GestionFTTH.Web.Data
+
+@{
+    ViewData["Title"] = "Detalle del trabajador";
+
+    var cuenta = ViewBag.Cuenta as ApplicationUser;
+    var tareas = ViewBag.Tareas as List<Tarea> ?? new List<Tarea>();
+}
+
+<div class="mb-4">
+    <h2 class="ftth-titulo mb-1">@Model.Nombres @Model.Apellidos</h2>
+    <span class="text-muted">Código: @Model.Codigo</span>
+</div>
+
+<div class="ftth-card mb-4">
+
+    <h5 class="ftth-seccion">Datos del trabajador</h5>
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="detalle-ml-label">Código</div>
+            <div class="detalle-ml-valor">@Model.Codigo</div>
+        </div>
+        <div class="col-md-3">
+            <div class="detalle-ml-label">Área</div>
+            <div class="detalle-ml-valor">@NombresVisibles.Area(Model.Area)</div>
+        </div>
+        <div class="col-md-3">
+            <div class="detalle-ml-label">Cargo</div>
+            <div class="detalle-ml-valor">@Model.Cargo</div>
+        </div>
+        <div class="col-md-3">
+            <div class="detalle-ml-label">Cuenta de usuario</div>
+            <div class="detalle-ml-valor">@(cuenta?.Email ?? "Sin cuenta")</div>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="d-flex justify-content-end flex-wrap gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">Volver al listado</a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Editar trabajador</a>
+    </div>
+</div>
+
+<div class="ftth-card">
+
+    <h5 class="ftth-seccion">Tareas asignadas (@tareas.Count)</h5>
+
+    @if (tareas.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Código</th>
+                        <th>Tarea</th>
+                        <th>Proyecto</th>
+                        <th>Estado</th>
+                        <th>Avance</th>
+                        <th>Fecha límite</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tarea in tareas)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-controller="Tareas" asp-action="Details" asp-route-id="@tarea.Id"
+                                   class="fw-semibold text-decoration-none">@tarea.Codigo</a>
+                            </td>
+                            <td>@tarea.Titulo</td>
+                            <td>@(tarea.Proyecto?.Nombre ?? "—")</td>
+                            <td>@NombresVisibles.EstadoTarea(tarea.Estado)</td>
+                            <td>@tarea.PorcentajeAvance %</td>
+                            <td>@(tarea.FechaLimite?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted mb-0">
+            @(cuenta == null
+                ? "El trabajador no tiene cuenta de usuario; no puede ser responsable de tareas."
+                : "No tiene tareas asignadas.")
+        </p>
+    }
+</div>

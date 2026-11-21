@@ -1,0 +1,175 @@
+@model GestionFTTH.Web.Models.Tarea
+@using GestionFTTH.Web.Models
+@using GestionFTTH.Web.Data
+@using Microsoft.AspNetCore.Mvc.Rendering
+@*
+    Campos del formulario de tarea, compartidos por Create y Edit.
+*@
+@{
+    var proyectos = ViewBag.Proyectos as List<Proyecto>
+                    ?? new List<Proyecto>();
+
+    var listaProyectos = proyectos.Select(p =>
+        new SelectListItem
+        {
+            Value = p.Id.ToString(),
+            Text = $"{p.Codigo} - {p.Nombre}"
+        }).ToList();
+
+    var trabajadores = ViewBag.Trabajadores as List<ApplicationUser>
+                       ?? new List<ApplicationUser>();
+
+    var listaTrabajadores = trabajadores.Select(u =>
+        new SelectListItem
+        {
+            Value = u.Id,
+            Text = u.Trabajador != null
+                ? $"{u.Trabajador.Nombres} {u.Trabajador.Apellidos} ({u.Email})"
+                : u.Email ?? u.UserName ?? u.Id
+        }).ToList();
+}
+
+<div asp-validation-summary="ModelOnly"
+     class="text-danger mb-3"></div>
+
+<div class="row g-3">
+
+    <!-- Proyecto -->
+    <div class="col-md-12">
+        <label asp-for="ProyectoId" class="form-label fw-semibold"></label>
+
+        <select asp-for="ProyectoId"
+                asp-items="listaProyectos"
+                class="form-select"
+                required>
+            <option value="">-- Seleccione un proyecto --</option>
+        </select>
+
+        @if (!listaProyectos.Any())
+        {
+            <small class="text-danger">No hay proyectos disponibles. Registre primero un proyecto.</small>
+        }
+
+        <span asp-validation-for="ProyectoId" class="text-danger"></span>
+    </div>
+
+    <!-- Responsable -->
+    <div class="col-md-12">
+        <label asp-for="ResponsableId" class="form-label fw-semibold">
+            Responsable asignado
+        </label>
+
+        <select asp-for="ResponsableId"
+                asp-items="listaTrabajadores"
+                class="form-select"
+                required>
+            <option value="">-- Seleccione un trabajador --</option>
+        </select>
+
+        @if (!listaTrabajadores.Any())
+        {
+            <small class="text-danger">
+                No hay usuarios con rol Trabajador. Créelos en el módulo Usuarios.
+            </small>
+        }
+
+        <span asp-validation-for="ResponsableId" class="text-danger"></span>
+    </div>
+
+    <!-- Código -->
+    <div class="col-md-4">
+        <label asp-for="Codigo" class="form-label fw-semibold"></label>
+        <input asp-for="Codigo" class="form-control" placeholder="Ej. T001" />
+        <span asp-validation-for="Codigo" class="text-danger"></span>
+    </div>
+
+    <!-- Título -->
+    <div class="col-md-8">
+        <label asp-for="Titulo" class="form-label fw-semibold"></label>
+        <input asp-for="Titulo" class="form-control" placeholder="Ej. Levantamiento de campo" />
+        <span asp-validation-for="Titulo" class="text-danger"></span>
+    </div>
+
+    <!-- Descripción -->
+    <div class="col-md-12">
+        <label asp-for="Descripcion" class="form-label fw-semibold"></label>
+        <textarea asp-for="Descripcion" class="form-control" rows="3"
+                  placeholder="Describa la actividad"></textarea>
+        <span asp-validation-for="Descripcion" class="text-danger"></span>
+    </div>
+
+    <!-- Prioridad -->
+    <div class="col-md-6">
+        <label asp-for="Prioridad" class="form-label fw-semibold"></label>
+        <select asp-for="Prioridad"
+                asp-items="Html.GetEnumSelectList<PrioridadTarea>()"
+                class="form-select">
+        </select>
+        <span asp-validation-for="Prioridad" class="text-danger"></span>
+    </div>
+
+    <!-- Estado -->
+    <div class="col-md-6">
+        <label asp-for="Estado" class="form-label fw-semibold"></label>
+        <select asp-for="Estado"
+                asp-items="Html.GetEnumSelectList<EstadoTarea>()"
+                class="form-select"
+                id="EstadoTarea">
+        </select>
+        <span asp-validation-for="Estado" class="text-danger"></span>
+    </div>
+
+    <!-- Fecha de inicio -->
+    <div class="col-md-4">
+        <label asp-for="FechaInicio" class="form-label fw-semibold"></label>
+        <input asp-for="FechaInicio" type="date" class="form-control" required />
+        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+    </div>
+
+    <!-- Fecha límite -->
+    <div class="col-md-4">
+        <label asp-for="FechaLimite" class="form-label fw-semibold"></label>
+        <input asp-for="FechaLimite" type="date" class="form-control" required />
+        <span asp-validation-for="FechaLimite" class="text-danger"></span>
+    </div>
+
+    <!-- Fecha real de finalización (solo si está finalizada) -->
+    <div class="col-md-4" id="grupoFinalizacion">
+        <label asp-for="FechaFinalizacion" class="form-label fw-semibold"></label>
+        <input asp-for="FechaFinalizacion" type="date" class="form-control"
+               max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        <small class="text-muted">Si se deja vacía, se usa la fecha de hoy.</small>
+        <span asp-validation-for="FechaFinalizacion" class="text-danger"></span>
+    </div>
+
+    <!-- Avance -->
+    <div class="col-md-6">
+        <label asp-for="PorcentajeAvance" class="form-label fw-semibold"></label>
+
+        <div class="input-group">
+            <input asp-for="PorcentajeAvance" type="number" min="0" max="100" step="1"
+                   class="form-control" />
+            <span class="input-group-text">%</span>
+        </div>
+
+        <small class="text-muted">Al marcar la tarea como Finalizada, el avance pasa a 100 %.</small>
+        <span asp-validation-for="PorcentajeAvance" class="text-danger d-block"></span>
+    </div>
+
+</div>
+
+<script>
+    (function () {
+        var estado = document.getElementById("EstadoTarea");
+        var grupo = document.getElementById("grupoFinalizacion");
+        if (!estado || !grupo) { return; }
+
+        function actualizar() {
+            // 3 = Finalizada
+            grupo.style.display = estado.value === "3" ? "block" : "none";
+        }
+
+        estado.addEventListener("change", actualizar);
+        actualizar();
+    })();
+</script>

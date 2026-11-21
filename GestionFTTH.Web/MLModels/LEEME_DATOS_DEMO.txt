@@ -1,0 +1,21 @@
+DATOS DEMOSTRATIVOS - NO SON RESULTADOS REALES DEL SISTEMA
+=========================================================
+
+DatosEntrenamiento.csv contiene 900 registros SIMULADOS (columna Origen = DEMO),
+generados de forma determinista para poder entrenar el modelo ML.NET mientras la
+base de datos no tenga suficiente historial real.
+
+Columnas:
+  Prioridad            Alta | Media | Baja
+  DuracionPlanificada  días entre la fecha de inicio y la fecha límite
+  PorcentajeAvance     avance registrado EN EL MOMENTO observado (0-99)
+  DiasTranscurridos    días transcurridos desde el inicio EN ESE MISMO MOMENTO
+  SeRetraso            etiqueta: la tarea terminó después de su fecha límite
+  Origen               DEMO (dato simulado)
+
+Cuando la tabla TareaAvances acumule al menos "MinimoRegistrosReales" registros
+(appsettings.json) de tareas finalizadas, con casos retrasados y a tiempo, el
+reentrenamiento usará automáticamente el histórico real de SQL Server.
+
+ModeloRetraso.zip  : modelo entrenado (ML.NET)
+ModeloRetraso.json : métricas y origen de datos del último entrenamiento
