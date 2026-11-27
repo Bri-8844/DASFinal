@@ -5,6 +5,7 @@
     ViewData["Title"] = "Detalle del proyecto";
 
     var esAdministrador = User.IsInRole("AdministradorPrincipal") || User.IsInRole("AdministradorGerencia");
+    var puedeGestionar = esAdministrador || User.IsInRole("JefeArea");
     string nombreArea = NombresVisibles.Area(Model.Area);
     string nombreEstado = NombresVisibles.EstadoProyecto(Model.Estado);
 
@@ -182,7 +183,7 @@
             Volver al listado
         </a>
 
-        @if (esAdministrador)
+        @if (puedeGestionar)
         {
         <a asp-controller="Proyectos"
            asp-action="Edit"
