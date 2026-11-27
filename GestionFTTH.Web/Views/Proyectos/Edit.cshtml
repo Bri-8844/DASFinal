@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Editar proyecto";
+    var areaJefe = (AreaProyecto?)ViewBag.AreaJefe;
 }
 
 <style>
@@ -140,11 +141,19 @@
 
             <div class="col-md-6">
                 <label asp-for="Area" class="form-label"></label>
+                @if (areaJefe.HasValue)
+                {
+                    <input type="hidden" asp-for="Area" />
+                    <input class="form-control" value="@NombresVisibles.Area(areaJefe.Value)" readonly />
+                }
+                else
+                {
                 <select asp-for="Area"
                         asp-items="Html.GetEnumSelectList<AreaProyecto>()"
                         class="form-select">
                     <option value="">Seleccione un área</option>
                 </select>
+                }
                 <span asp-validation-for="Area"
                       class="text-danger"></span>
             </div>
