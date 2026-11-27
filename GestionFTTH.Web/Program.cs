@@ -185,4 +185,15 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Ejecutar una sola vez y solo en desarrollo: dotnet run -- --sembrar-demo
+if (args.Contains("--sembrar-demo"))
+{
+    if (!app.Environment.IsDevelopment())
+        throw new InvalidOperationException("Los datos demo solo se permiten en desarrollo.");
+
+    using var scopeDemo = app.Services.CreateScope();
+    await DatosDemoSeeder.EjecutarAsync(scopeDemo.ServiceProvider, app.Configuration);
+    return; // No iniciar el servidor al terminar la carga.
+}
+
 app.Run();
