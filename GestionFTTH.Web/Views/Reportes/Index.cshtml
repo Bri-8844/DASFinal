@@ -1,0 +1,130 @@
+@using GestionFTTH.Web.Services
+@{
+    ViewData["Title"] = "Reportes";
+    var proyectos = (List<Proyecto>)ViewBag.Proyectos;
+    var tareas = (List<Tarea>)ViewBag.Tareas;
+    var riesgos = (List<Tarea>)ViewBag.Riesgos;
+    var area = (AreaProyecto?)ViewBag.Area;
+    var estadoProyecto = (EstadoProyecto?)ViewBag.EstadoProyecto;
+    var estadoTarea = (EstadoTarea?)ViewBag.EstadoTarea;
+    bool esAdministrador = ViewBag.EsAdministrador;
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="fw-bold mb-1" style="color:#12395e;">Reportes</h2>
+        <p class="text-muted mb-0">Resumen de proyectos, tareas y riesgo de retraso.</p>
+    </div>
+</div>
+
+<form asp-action="Index" method="get" class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold" for="area">Área</label>
+                @if (esAdministrador)
+                {
+                    <select class="form-select" id="area" name="area">
+                        <option value="">Todas las áreas</option>
+                        @foreach (var item in Enum.GetValues<AreaProyecto>())
+                        {
+                            <option value="@((int)item)" selected="@(area == item)">@NombresVisibles.Area(item)</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <input class="form-control" value="@(area.HasValue ? NombresVisibles.Area(area.Value) : "")" readonly />
+                }
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold" for="estadoProyecto">Estado del proyecto</label>
+                <select class="form-select" id="estadoProyecto" name="estadoProyecto">
+                    <option value="">Todos</option>
+                    @foreach (var item in Enum.GetValues<EstadoProyecto>())
+                    {
+                        <option value="@((int)item)" selected="@(estadoProyecto == item)">@NombresVisibles.Estado(item)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold" for="estadoTarea">Estado de la tarea</label>
+                <select class="form-select" id="estadoTarea" name="estadoTarea">
+                    <option value="">Todos</option>
+                    @foreach (var item in Enum.GetValues<EstadoTarea>())
+                    {
+                        <option value="@((int)item)" selected="@(estadoTarea == item)">@NombresVisibles.Estado(item)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted">Proyectos</div><h2 class="fw-bold text-primary">@ViewBag.TotalProyectos</h2><small>Pendientes: @ViewBag.ProyectosPendientes · En ejecución: @ViewBag.ProyectosEnEjecucion · Finalizados: @ViewBag.ProyectosFinalizados</small></div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted">Tareas pendientes</div><h2 class="fw-bold">@ViewBag.TareasPendientes</h2></div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted">Tareas en ejecución / finalizadas</div><h2 class="fw-bold">@ViewBag.TareasEnEjecucion / @ViewBag.TareasFinalizadas</h2></div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted">Riesgo alto ML.NET</div><h2 class="fw-bold text-danger">@riesgos.Count</h2><small>Solo tareas activas</small></div></div></div>
+</div>
+
+@if ((bool)ViewBag.ModeloDemostrativo)
+{
+    <div class="alert alert-warning py-2">ML.NET en modo demostrativo: las predicciones usan un modelo entrenado con datos simulados.</div>
+}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="fw-bold">Proyectos (@proyectos.Count)</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm align-middle">
+                <thead><tr><th>Código</th><th>Proyecto</th><th>Área</th><th>Estado</th></tr></thead>
+                <tbody>
+                @foreach (var p in proyectos)
+                {
+                    <tr><td>@p.Codigo</td><td>@p.Nombre</td><td>@NombresVisibles.Area(p.Area)</td><td>@NombresVisibles.Estado(p.Estado)</td></tr>
+                }
+                @if (proyectos.Count == 0) { <tr><td colspan="4" class="text-muted">Sin proyectos para los filtros seleccionados.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="fw-bold">Tareas (@tareas.Count)</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm align-middle">
+                <thead><tr><th>Código</th><th>Tarea</th><th>Proyecto</th><th>Estado</th><th>Avance</th></tr></thead>
+                <tbody>
+                @foreach (var t in tareas)
+                {
+                    <tr><td>@t.Codigo</td><td>@t.Titulo</td><td>@t.Proyecto?.Nombre</td><td>@NombresVisibles.Estado(t.Estado)</td><td>@t.PorcentajeAvance%</td></tr>
+                }
+                @if (tareas.Count == 0) { <tr><td colspan="5" class="text-muted">Sin tareas para los filtros seleccionados.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="fw-bold">Tareas con riesgo alto (@riesgos.Count)</h5>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm align-middle">
+                <thead><tr><th>Código</th><th>Tarea</th><th>Proyecto</th><th>Fecha límite</th></tr></thead>
+                <tbody>
+                @foreach (var t in riesgos)
+                {
+                    <tr><td>@t.Codigo</td><td>@t.Titulo</td><td>@t.Proyecto?.Nombre</td><td>@t.FechaLimite?.ToString("dd/MM/yyyy")</td></tr>
+                }
+                @if (riesgos.Count == 0) { <tr><td colspan="4" class="text-muted">No hay tareas con riesgo alto en esta selección.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
