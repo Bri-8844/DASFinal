@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Detalle del proyecto";
 
+    var esAdministrador = User.IsInRole("AdministradorPrincipal") || User.IsInRole("AdministradorGerencia");
     string nombreArea = NombresVisibles.Area(Model.Area);
     string nombreEstado = NombresVisibles.EstadoProyecto(Model.Estado);
 
@@ -181,6 +182,8 @@
             Volver al listado
         </a>
 
+        @if (esAdministrador)
+        {
         <a asp-controller="Proyectos"
            asp-action="Edit"
            asp-route-id="@Model.Id"
@@ -197,6 +200,7 @@
                 Eliminar
             </button>
         </form>
+        }
 
     </div>
 
