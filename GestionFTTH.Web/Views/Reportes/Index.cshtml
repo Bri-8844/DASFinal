@@ -42,7 +42,7 @@
                     <option value="">Todos</option>
                     @foreach (var item in Enum.GetValues<EstadoProyecto>())
                     {
-                        <option value="@((int)item)" selected="@(estadoProyecto == item)">@NombresVisibles.Estado(item)</option>
+                        <option value="@((int)item)" selected="@(estadoProyecto == item)">@NombresVisibles.EstadoProyecto(item)</option>
                     }
                 </select>
             </div>
@@ -52,7 +52,7 @@
                     <option value="">Todos</option>
                     @foreach (var item in Enum.GetValues<EstadoTarea>())
                     {
-                        <option value="@((int)item)" selected="@(estadoTarea == item)">@NombresVisibles.Estado(item)</option>
+                        <option value="@((int)item)" selected="@(estadoTarea == item)">@NombresVisibles.EstadoProyecto(item)</option>
                     }
                 </select>
             </div>
@@ -84,7 +84,7 @@
                 <tbody>
                 @foreach (var p in proyectos)
                 {
-                    <tr><td>@p.Codigo</td><td>@p.Nombre</td><td>@NombresVisibles.Area(p.Area)</td><td>@NombresVisibles.Estado(p.Estado)</td></tr>
+                    <tr><td>@p.Codigo</td><td>@p.Nombre</td><td>@NombresVisibles.Area(p.Area)</td><td>@NombresVisibles.EstadoProyecto(p.Estado)</td></tr>
                 }
                 @if (proyectos.Count == 0) { <tr><td colspan="4" class="text-muted">Sin proyectos para los filtros seleccionados.</td></tr> }
                 </tbody>
@@ -102,7 +102,7 @@
                 <tbody>
                 @foreach (var t in tareas)
                 {
-                    <tr><td>@t.Codigo</td><td>@t.Titulo</td><td>@t.Proyecto?.Nombre</td><td>@NombresVisibles.Estado(t.Estado)</td><td>@t.PorcentajeAvance%</td></tr>
+                    <tr><td>@t.Codigo</td><td>@t.Titulo</td><td>@t.Proyecto?.Nombre</td><td>@NombresVisibles.EstadoTarea(t.Estado)</td><td>@t.PorcentajeAvance%</td></tr>
                 }
                 @if (tareas.Count == 0) { <tr><td colspan="5" class="text-muted">Sin tareas para los filtros seleccionados.</td></tr> }
                 </tbody>
