@@ -91,20 +91,26 @@ namespace GestionFTTH.Web.Controllers
         }
 
         // Mostrar formulario de registro
-        [Authorize(Roles = Roles.Administradores)]
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View(new Proyecto());
+            var alcance = await _alcance.ObtenerAsync(User);
+            if (!alcance.EsAdministrador && !alcance.Area.HasValue) return Forbid();
+            ViewBag.AreaJefe = alcance.EsJefeArea ? alcance.Area : null;
+            return View(new Proyecto { Area = alcance.Area ?? AreaProyecto.Prediseño });
         }
 
         // Guardar proyecto en SQL Server
-        [Authorize(Roles = Roles.Administradores)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
             [Bind(CamposFormulario)] Proyecto proyecto)
         {
+            var alcance = await _alcance.ObtenerAsync(User);
+            if (!alcance.EsAdministrador && !alcance.Area.HasValue) return Forbid();
+            if (alcance.EsJefeArea && proyecto.Area != alcance.Area) return Forbid();
+            ViewBag.AreaJefe = alcance.EsJefeArea ? alcance.Area : null;
+
             await ValidarProyectoAsync(proyecto, idActual: null);
 
             if (!ModelState.IsValid)
@@ -125,7 +131,6 @@ namespace GestionFTTH.Web.Controllers
         }
 
         // Mostrar formulario de edición
-        [Authorize(Roles = Roles.Administradores)]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -138,6 +143,9 @@ namespace GestionFTTH.Web.Controllers
                 return NotFound();
             }
 
+            var alcance = await _alcance.ObtenerAsync(User);
+            if (!alcance.PuedeUsarProyecto(proyecto)) return Forbid();
+            ViewBag.AreaJefe = alcance.EsJefeArea ? alcance.Area : null;
             return View(proyecto);
         }
 
@@ -160,6 +168,11 @@ namespace GestionFTTH.Web.Controllers
             {
                 return NotFound();
             }
+
+            var alcance = await _alcance.ObtenerAsync(User);
+            if (!alcance.PuedeUsarProyecto(proyecto)) return Forbid();
+            if (alcance.EsJefeArea && datos.Area != alcance.Area) return Forbid();
+            ViewBag.AreaJefe = alcance.EsJefeArea ? alcance.Area : null;
 
             await ValidarProyectoAsync(datos, idActual: id);
 
@@ -208,6 +221,9 @@ namespace GestionFTTH.Web.Controllers
             {
                 return NotFound();
             }
+
+            var alcance = await _alcance.ObtenerAsync(User);
+            if (!alcance.PuedeUsarProyecto(proyecto)) return Forbid();
 
             int tareas = await _context.Tareas.CountAsync(t => t.ProyectoId == id);
 
