@@ -80,8 +80,8 @@ public static class DatosDemoSeeder
         // Los responsables pertenecen siempre a la misma área del proyecto.
         var responsables = new Dictionary<AreaProyecto, string[]>
         {
-            [AreaProyecto.Prediseno] = new[] { "DEMO-TRB-004", "DEMO-TRB-005" },
-            [AreaProyecto.Diseno] = new[] { "DEMO-TRB-009", "DEMO-TRB-010" },
+            [AreaProyecto.Prediseño] = new[] { "DEMO-TRB-004", "DEMO-TRB-005" },
+            [AreaProyecto.Diseño] = new[] { "DEMO-TRB-009", "DEMO-TRB-010" },
             [AreaProyecto.Construccion] = new[] { "DEMO-TRB-015" }
         };
 
