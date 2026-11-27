@@ -96,6 +96,10 @@
                             <span>▦</span> Dashboard
                         </a>
 
+                    }
+
+                    @if (esAdministrador || esJefeArea)
+                    {
                         <a asp-area=""
                            asp-controller="Proyectos"
                            asp-action="Index"
