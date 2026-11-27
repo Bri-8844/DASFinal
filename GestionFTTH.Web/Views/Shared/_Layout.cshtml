@@ -138,10 +138,16 @@
                             <span>◈</span> Modelo ML.NET
                         </a>
 
-                        <span class="ftth-menu-item disabled"
-                              title="Módulo no incluido en esta versión">
+                    }
+
+                    @if (esAdministrador || esJefeArea)
+                    {
+                        <a asp-area=""
+                           asp-controller="Reportes"
+                           asp-action="Index"
+                           class="ftth-menu-item @Activo("Reportes")">
                             <span>▥</span> Reportes
-                        </span>
+                        </a>
                     }
 
                 </nav>
