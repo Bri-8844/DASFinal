@@ -41,7 +41,7 @@ namespace GestionFTTH.Web.Controllers
         private const int TamanoPagina = 25;
 
         // GET: Tareas  (filtro opcional: riesgo-alto | activas | finalizadas; paginado)
-        public async Task<IActionResult> Index(string? filtro, int pagina = 1)
+        public async Task<IActionResult> Index(string? filtro, int pagina = 1, AreaProyecto? area = null)
         {
             var alcance = await _alcanceService.ObtenerAsync(User);
 
@@ -49,6 +49,10 @@ namespace GestionFTTH.Web.Controllers
                 _context.Tareas
                     .AsNoTracking()
                     .Include(t => t.Proyecto));
+
+            // Filtrar por área sin saltarse los permisos de cada usuario.
+            if (area.HasValue && Enum.IsDefined(typeof(AreaProyecto), area.Value))
+                consulta = consulta.Where(t => t.Proyecto != null && t.Proyecto.Area == area.Value);
 
             if (filtro == "activas" || filtro == "riesgo-alto")
             {
@@ -104,6 +108,7 @@ namespace GestionFTTH.Web.Controllers
                 ModoDemostrativo = _prediccion.ModoDemostrativo,
                 UmbralRiesgoPorcentaje = (int)Math.Round(_prediccion.UmbralRiesgoAlto * 100),
                 Filtro = filtro,
+                AreaSeleccionada = area,
                 Pagina = pagina,
                 TotalPaginas = totalPaginas,
                 TotalRegistros = totalRegistros,
