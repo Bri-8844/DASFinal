@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GestionFTTH.Web.Controllers
 {
-    [Authorize(Roles = Roles.Administradores)]
+    [Authorize(Roles = Roles.Administradores + "," + Roles.JefeArea)]
     public class ProyectosController : Controller
     {
         private const string CamposFormulario =
@@ -16,19 +16,30 @@ namespace GestionFTTH.Web.Controllers
 
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ProyectosController> _logger;
+        private readonly AlcanceUsuarioService _alcance;
 
         public ProyectosController(
             ApplicationDbContext context,
-            ILogger<ProyectosController> logger)
+            ILogger<ProyectosController> logger,
+            AlcanceUsuarioService alcance)
         {
             _context = context;
             _logger = logger;
+            _alcance = alcance;
         }
 
         // Listar proyectos (filtro opcional por área)
         public async Task<IActionResult> Index(AreaProyecto? area)
         {
+            var alcance = await _alcance.ObtenerAsync(User);
             var consulta = _context.Proyectos.AsNoTracking();
+
+            if (!alcance.EsAdministrador)
+            {
+                if (!alcance.Area.HasValue) return Forbid();
+                consulta = consulta.Where(p => p.Area == alcance.Area.Value);
+                area = alcance.Area;
+            }
 
             if (area.HasValue)
             {
@@ -66,10 +77,9 @@ namespace GestionFTTH.Web.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (proyecto == null)
-            {
-                return NotFound();
-            }
+            if (proyecto == null) return NotFound();
+            var alcance = await _alcance.ObtenerAsync(User);
+            if (!alcance.PuedeUsarProyecto(proyecto)) return Forbid();
 
             ViewBag.Tareas = await _context.Tareas
                 .AsNoTracking()
@@ -81,6 +91,7 @@ namespace GestionFTTH.Web.Controllers
         }
 
         // Mostrar formulario de registro
+        [Authorize(Roles = Roles.Administradores)]
         [HttpGet]
         public IActionResult Create()
         {
@@ -88,6 +99,7 @@ namespace GestionFTTH.Web.Controllers
         }
 
         // Guardar proyecto en SQL Server
+        [Authorize(Roles = Roles.Administradores)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
@@ -113,6 +125,7 @@ namespace GestionFTTH.Web.Controllers
         }
 
         // Mostrar formulario de edición
+        [Authorize(Roles = Roles.Administradores)]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
