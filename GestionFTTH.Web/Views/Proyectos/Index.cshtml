@@ -5,6 +5,7 @@
     ViewData["Title"] = "Proyectos";
 
     var esAdministrador = User.IsInRole("AdministradorPrincipal") || User.IsInRole("AdministradorGerencia");
+    var puedeGestionar = esAdministrador || User.IsInRole("JefeArea");
     var total = Model.Count();
     var pendientes = Model.Count(p => p.Estado == EstadoProyecto.Pendiente);
     var ejecucion = Model.Count(p => p.Estado == EstadoProyecto.EnEjecucion);
@@ -150,7 +151,7 @@
         <p>Consulta y administra los proyectos FTTH registrados.</p>
     </div>
 
-    @if (esAdministrador)
+    @if (puedeGestionar)
     {
         <a asp-controller="Proyectos" asp-action="Create" class="btn-nuevo">+ Nuevo proyecto</a>
     }
@@ -301,7 +302,7 @@
                                        asp-route-id="@proyecto.Id"
                                        class="btn btn-sm btn-outline-secondary">Ver</a>
 
-                                    @if (esAdministrador)
+                                    @if (puedeGestionar)
                                     {
                                     <a asp-controller="Proyectos"
                                        asp-action="Edit"
@@ -328,7 +329,7 @@
                         <td colspan="8" class="sin-proyectos">
                             Aún no existen proyectos registrados.
                             <div class="mt-2">
-                                @(esAdministrador ? "Presiona Nuevo proyecto para comenzar." : "No hay proyectos registrados en tu área.")
+                                @(puedeGestionar ? "Presiona Nuevo proyecto para comenzar." : "No hay proyectos registrados en tu área.")
                             </div>
                         </td>
                     </tr>
