@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Proyectos";
 
+    var esAdministrador = User.IsInRole("AdministradorPrincipal") || User.IsInRole("AdministradorGerencia");
     var total = Model.Count();
     var pendientes = Model.Count(p => p.Estado == EstadoProyecto.Pendiente);
     var ejecucion = Model.Count(p => p.Estado == EstadoProyecto.EnEjecucion);
@@ -149,11 +150,10 @@
         <p>Consulta y administra los proyectos FTTH registrados.</p>
     </div>
 
-    <a asp-controller="Proyectos"
-       asp-action="Create"
-       class="btn-nuevo">
-        + Nuevo proyecto
-    </a>
+    @if (esAdministrador)
+    {
+        <a asp-controller="Proyectos" asp-action="Create" class="btn-nuevo">+ Nuevo proyecto</a>
+    }
 </div>
 
 <div class="row g-3">
@@ -195,7 +195,7 @@
         Listado de proyectos - @tituloArea
     </h5>
 
-    @if (areaSeleccionada.HasValue)
+    @if (esAdministrador && areaSeleccionada.HasValue)
     {
         <a asp-controller="Proyectos"
            asp-action="Index"
@@ -301,6 +301,8 @@
                                        asp-route-id="@proyecto.Id"
                                        class="btn btn-sm btn-outline-secondary">Ver</a>
 
+                                    @if (esAdministrador)
+                                    {
                                     <a asp-controller="Proyectos"
                                        asp-action="Edit"
                                        asp-route-id="@proyecto.Id"
@@ -314,6 +316,7 @@
                                         <button type="submit"
                                                 class="btn btn-sm btn-outline-danger">Eliminar</button>
                                     </form>
+                                    }
                                 </div>
                             </td>
                         </tr>
@@ -325,7 +328,7 @@
                         <td colspan="8" class="sin-proyectos">
                             Aún no existen proyectos registrados.
                             <div class="mt-2">
-                                Presiona "Nuevo proyecto" para comenzar.
+                                @(esAdministrador ? "Presiona Nuevo proyecto para comenzar." : "No hay proyectos registrados en tu área.")
                             </div>
                         </td>
                     </tr>
