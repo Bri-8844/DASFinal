@@ -52,7 +52,7 @@
                     <option value="">Todos</option>
                     @foreach (var item in Enum.GetValues<EstadoTarea>())
                     {
-                        <option value="@((int)item)" selected="@(estadoTarea == item)">@NombresVisibles.EstadoProyecto(item)</option>
+                        <option value="@((int)item)" selected="@(estadoTarea == item)">@NombresVisibles.EstadoTarea(item)</option>
                     }
                 </select>
             </div>
