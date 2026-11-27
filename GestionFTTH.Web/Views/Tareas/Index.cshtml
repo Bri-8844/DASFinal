@@ -56,12 +56,25 @@
         }
     </div>
 
-    <!-- Filtros -->
+    <!-- Áreas: se combinan con los filtros de estado existentes -->
     <div class="d-flex flex-wrap gap-2 mb-3">
-        <a asp-action="Index" class="btn btn-sm @ClaseFiltro(null)">Todas</a>
-        <a asp-action="Index" asp-route-filtro="activas" class="btn btn-sm @ClaseFiltro("activas")">Activas</a>
-        <a asp-action="Index" asp-route-filtro="riesgo-alto" class="btn btn-sm @ClaseFiltro("riesgo-alto")">Riesgo alto</a>
-        <a asp-action="Index" asp-route-filtro="finalizadas" class="btn btn-sm @ClaseFiltro("finalizadas")">Finalizadas</a>
+        <a asp-action="Index" asp-route-filtro="@Model.Filtro"
+           class="btn @(Model.AreaSeleccionada == null ? "btn-primary" : "btn-outline-primary")">Todas las áreas</a>
+        @foreach (var area in Enum.GetValues<AreaProyecto>())
+        {
+            <a asp-action="Index" asp-route-area="@((int)area)" asp-route-filtro="@Model.Filtro"
+               class="btn @(Model.AreaSeleccionada == area ? "btn-primary" : "btn-outline-primary")">
+                @NombresVisibles.Area(area)
+            </a>
+        }
+    </div>
+
+    <!-- Filtros por estado y riesgo -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <a asp-action="Index" asp-route-area="@((int?)Model.AreaSeleccionada)" class="btn btn-sm @ClaseFiltro(null)">Todas</a>
+        <a asp-action="Index" asp-route-area="@((int?)Model.AreaSeleccionada)" asp-route-filtro="activas" class="btn btn-sm @ClaseFiltro("activas")">Activas</a>
+        <a asp-action="Index" asp-route-area="@((int?)Model.AreaSeleccionada)" asp-route-filtro="riesgo-alto" class="btn btn-sm @ClaseFiltro("riesgo-alto")">Riesgo alto</a>
+        <a asp-action="Index" asp-route-area="@((int?)Model.AreaSeleccionada)" asp-route-filtro="finalizadas" class="btn btn-sm @ClaseFiltro("finalizadas")">Finalizadas</a>
     </div>
 
     <div class="card border-0 shadow-sm">
@@ -203,7 +216,7 @@
                             <tr>
                                 <td colspan="10"
                                     class="text-center text-muted py-5">
-                                    @(Model.Filtro == null
+                                    @(Model.Filtro == null && Model.AreaSeleccionada == null
                                         ? "Todavía no existen tareas registradas."
                                         : "No hay tareas que coincidan con el filtro seleccionado.")
                                 </td>
@@ -230,20 +243,20 @@
                             <ul class="pagination pagination-sm mb-0">
                                 <li class="page-item @(Model.Pagina <= 1 ? "disabled" : "")">
                                     <a class="page-link" asp-action="Index" asp-route-filtro="@Model.Filtro"
-                                       asp-route-pagina="@(Model.Pagina - 1)">Anterior</a>
+                                       asp-route-area="@((int?)Model.AreaSeleccionada)" asp-route-pagina="@(Model.Pagina - 1)">Anterior</a>
                                 </li>
 
                                 @for (int i = Math.Max(1, Model.Pagina - 2); i <= Math.Min(Model.TotalPaginas, Model.Pagina + 2); i++)
                                 {
                                     <li class="page-item @(i == Model.Pagina ? "active" : "")">
                                         <a class="page-link" asp-action="Index" asp-route-filtro="@Model.Filtro"
-                                           asp-route-pagina="@i">@i</a>
+                                           asp-route-area="@((int?)Model.AreaSeleccionada)" asp-route-pagina="@i">@i</a>
                                     </li>
                                 }
 
                                 <li class="page-item @(Model.Pagina >= Model.TotalPaginas ? "disabled" : "")">
                                     <a class="page-link" asp-action="Index" asp-route-filtro="@Model.Filtro"
-                                       asp-route-pagina="@(Model.Pagina + 1)">Siguiente</a>
+                                       asp-route-area="@((int?)Model.AreaSeleccionada)" asp-route-pagina="@(Model.Pagina + 1)">Siguiente</a>
                                 </li>
                             </ul>
                         </nav>

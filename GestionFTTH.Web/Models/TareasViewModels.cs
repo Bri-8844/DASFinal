@@ -25,6 +25,8 @@ namespace GestionFTTH.Web.Models
 
         public string? Filtro { get; set; }
 
+        public AreaProyecto? AreaSeleccionada { get; set; }
+
         // Paginación
         public int Pagina { get; set; } = 1;
         public int TotalPaginas { get; set; } = 1;
